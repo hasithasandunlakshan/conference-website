@@ -39,7 +39,7 @@ jobs:
           if (isIssue) {
               const query = `query($owner:String!, $name:String!, $contributer:String!) {
               repository(owner:$owner, name:$name){
-                issues(first: 1, filterBy: {createdBy:$contributer}){
+                issues(first: 2, filterBy: {createdBy:$contributer, states: [OPEN, CLOSED]}){
                   totalCount
                 }
               }
@@ -53,12 +53,12 @@ jobs:
             isFirstContribution = totalCount === 1;
           } else {
               const query = `query($qstr: String!) {
-                search(query: $qstr, type: ISSUE, first: 1) {
+                search(query: $qstr, type: ISSUE, first: 2) {
                    issueCount
                  }
               }`;
             const variables = {
-              "qstr": `repo:${context.repo.owner}/${context.repo.repo} type:pr author:${context.payload.sender.login}`,
+              "qstr": `repo:${context.repo.owner}/${context.repo.repo} is:pr author:${context.payload.sender.login}`,
             };
             const { search: { issueCount } } = await github.graphql(query, variables);
             isFirstContribution = issueCount === 1;
