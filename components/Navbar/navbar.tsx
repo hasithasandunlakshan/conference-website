@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import Dropdown from '../illustration/dropdown';
 import { useState, useEffect, useRef, useCallback, JSX } from 'react';
@@ -8,9 +10,13 @@ import { useMediaQuery } from 'react-responsive';
 import Cancel from '../illustration/cancel';
 import Image from 'next/image';
 import { LinkItem } from '../../types/types';
+import { usePathname } from 'next/navigation';
+import { useSectionTracker } from '../../hooks/useSectionTracker';
 
 function Navbar(): JSX.Element {
   const isTablet = useMediaQuery({ maxWidth: '1118px' });
+  const pathname = usePathname();
+  const { isActive } = useSectionTracker(pathname);
   const [drop, setDrop] = useState<boolean>(false);
   const [show, setShow] = useState<string | null>(null);
   const [isSubMenuHovered, setIsSubMenuHovered] = useState<boolean>(false);
@@ -178,11 +184,27 @@ function Navbar(): JSX.Element {
                         <Link href={link.ref}>{link.title}</Link>
                       )}
                     </div>
-                    <span className="after:absolute after:-bottom-1 after:left-1/2 after:w-0 after:transition-all after:h-0.5 after:bg-white after:group-hover:w-3/6  "></span>
-                    <span className="after:absolute after:-bottom-1 after:right-1/2 after:w-0 after:transition-all after:h-0.5 after:bg-white after:group-hover:w-3/6"></span>
-                    {show === link.title && link.subMenu && (
+                    <span
+                      className={`after:absolute after:-bottom-1 after:left-1/2 after:transition-all after:h-0.5 after:bg-white ${
+                        isActive(link)
+                          ? 'after:w-3/6'
+                          : 'after:w-0 after:group-hover:w-3/6'
+                      }`}
+                    ></span>
+                    <span
+                      className={`after:absolute after:-bottom-1 after:right-1/2 after:transition-all after:h-0.5 after:bg-white ${
+                        isActive(link)
+                          ? 'after:w-3/6'
+                          : 'after:w-0 after:group-hover:w-3/6'
+                      }`}
+                    ></span>
+                    {link.subMenu && (
                       <div
-                        className="subMenu absolute z-[9] mt-8 min-w-[150px] whitespace-nowrap rounded-md left-[-15px] gradient-bg px-2 py-1 flex flex-col justify-center space-y-0"
+                        className={`subMenu absolute z-[9] mt-8 min-w-[150px] whitespace-nowrap rounded-md left-[-15px] gradient-bg px-2 py-1 flex flex-col justify-center space-y-0 transition-all duration-300 origin-top-left ${
+                          show === link.title
+                            ? 'opacity-100 scale-100 pointer-events-auto'
+                            : 'opacity-0 scale-95 pointer-events-none'
+                        }`}
                         onMouseEnter={handleSubMenuEnter}
                         onMouseLeave={handleSubMenuLeave}
                       >
@@ -194,7 +216,15 @@ function Navbar(): JSX.Element {
                             ref={(el) => {
                               subMenuRefs.current[index] = el;
                             }}
-                            className={`flex items-center ${link.subMenu!.length === 1 ? 'justify-center' : 'justify-start'} min-h-[32px] text-[16px] hover:scale-95 hover:translate-x-1 transition-all focus:outline-none focus:bg-white focus:bg-opacity-20 focus:scale-95 focus:translate-x-1 rounded px-2 py-1`}
+                            className={`flex items-center ${
+                              link.subMenu!.length === 1
+                                ? 'justify-center'
+                                : 'justify-start'
+                            } min-h-[32px] text-[16px] hover:scale-95 hover:translate-x-1 transition-all focus:outline-none focus:bg-white focus:bg-opacity-20 focus:scale-95 focus:translate-x-1 rounded px-2 py-1 ${
+                              isActive(subL)
+                                ? 'bg-white bg-opacity-10 font-semibold text-[#C6BED9]'
+                                : ''
+                            }`}
                             data-test={`nav-sub-${subL.title}`}
                             onKeyDown={(e) => {
                               const currentIndex = index;
